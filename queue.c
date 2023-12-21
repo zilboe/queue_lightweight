@@ -12,10 +12,10 @@ queue_t queue_fifo;
 
 enum QUEUE_ERR{
     QUEUE_ERR_OK = 0,   //OK
-    QUEUE_ERR_MAXLEN,   //超过存储空间
-    QUEUE_ERR_OVERLEN,  //超过剩余空间
-    QUEUE_ERR_FULL,     //队列满
-    QUEUE_ERR_EMPTY,    //队列空
+    QUEUE_ERR_MAXLEN,   //OVER MAX SIZE
+    QUEUE_ERR_OVERLEN,  //OVER LEFT SIZE
+    QUEUE_ERR_FULL,     //FULL
+    QUEUE_ERR_EMPTY,    //EMPTY
 };
 
 static queue_t *queue_init(void)
@@ -47,10 +47,10 @@ static unsigned char queue_push(queue_t *queue, char *buff, int len)
     return QUEUE_ERR_OK;
 }
 
-static unsigned char queue_pop(queue_t *queue, char *buff, int len)
+static unsigned int  queue_pop(queue_t *queue, char *buff, int len)
 {
     if(queue->head == queue->tail)
-        return QUEUE_ERR_EMPTY;
+        return QUEUE_ERR_OK;
     int pop_len = (len>queue->size)?queue->size:len;
     for(int i=0; i<pop_len; i++)
     {
@@ -58,11 +58,12 @@ static unsigned char queue_pop(queue_t *queue, char *buff, int len)
         buff[i] = queue->queue[queue->head];
     }
     queue->size -= pop_len;
-    return QUEUE_ERR_OK;
+    return pop_len;
 }
 
 int main()
 {
+    /* test */
     queue_t *queue = queue_init();
     char buff1[64] = "hello world";
     char buff2[64] = "123456789";
