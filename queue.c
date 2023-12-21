@@ -1,30 +1,31 @@
-#include <stdio.h>
-#define QUEUE_MAX   256
-char queue[QUEUE_MAX];
-typedef struct queue_t{
-    int head;
-    int tail;
-    char *queue;
-    int size;
-}queue_t;
+#include "queue.h"
 
-queue_t queue_fifo;
+static char queue[QUEUE_LIST_SIZE][QUEUE_MAX];
 
-enum QUEUE_ERR{
-    QUEUE_ERR_OK = 0,   //OK
-    QUEUE_ERR_MAXLEN,   //OVER MAX SIZE
-    QUEUE_ERR_OVERLEN,  //OVER LEFT SIZE
-    QUEUE_ERR_FULL,     //FULL
-    QUEUE_ERR_EMPTY,    //EMPTY
-};
+static queue_t queue_fifo[QUEUE_LIST_SIZE];
+
+static char queue_mask = 0;
 
 static queue_t *queue_init(void)
 {
-    queue_t *p_queue = &queue_fifo;
+    char id = 0;
+    while(id<QUEUE_LIST_SIZE)
+    {
+        if(!((queue_mask>>id)&1))
+            break;
+        id++;
+    }
+    if(QUEUE_LIST_SIZE == id)
+    {
+        printf("there is no queue could be used");
+        return NULL;
+    }
+    queue_mask &= (1<<id);
+    queue_t *p_queue = &queue_fifo[id];
+    p_queue->queue = queue[id];
     p_queue->head = 0;
     p_queue->tail = 0;
     p_queue->size = 0;
-    p_queue->queue = queue;
     return p_queue;
 }
 
@@ -47,7 +48,7 @@ static unsigned char queue_push(queue_t *queue, char *buff, int len)
     return QUEUE_ERR_OK;
 }
 
-static unsigned int  queue_pop(queue_t *queue, char *buff, int len)
+static unsigned int queue_pop(queue_t *queue, char *buff, int len)
 {
     if(queue->head == queue->tail)
         return QUEUE_ERR_OK;
@@ -61,21 +62,37 @@ static unsigned int  queue_pop(queue_t *queue, char *buff, int len)
     return pop_len;
 }
 
+static unsigned char queeu_uninit(queue_t *queue)
+{
+    if(!queue)
+        return QUEUE_ERR_MEM;
+    
+}
+
 int main()
 {
     /* test */
-    queue_t *queue = queue_init();
+    queue_t *queue1 = queue_init();
+    queue_t *queue2 = queue_init();
+    queue_t *queue3 = queue_init();
+    queue_t *queue4 = queue_init();
+    queue_t *queue5 = queue_init();
+    queue_t *queue6 = queue_init();
+    queue_t *queue7 = queue_init();
+    queue_t *queue8 = queue_init();
+    queue_t *queue9 = queue_init();
+    queue_t *queue10 = queue_init();
     char buff1[64] = "hello world";
     char buff2[64] = "123456789";
     char buff_pop1[128];
     char buff_pop2[128];
-    queue_push(queue, buff1, sizeof(buff1));
+    queue_push(queue1, buff1, sizeof(buff1));
     //printf("%d\n",queue->size);
-    queue_push(queue, buff2, sizeof(buff2));
+    queue_push(queue1, buff2, sizeof(buff2));
 
-    queue_pop(queue, buff_pop1, 64);
+    queue_pop(queue1, buff_pop1, 64);
     printf("%s\n", buff_pop1);
-    queue_pop(queue, buff_pop2, 64);
+    queue_pop(queue1, buff_pop2, 64);
     printf("%s\n", buff_pop2);
 
     return 0;
