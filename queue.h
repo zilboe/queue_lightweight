@@ -8,6 +8,8 @@
 
 #if !defined(QUEUE_LIST_SIZE)
 #define QUEUE_LIST_SIZE (sizeof(char)*QUEUE_NUM)
+#else 
+#define QUEUE_LIST_SIZE 8
 #endif
 
 typedef struct queue_t{
