@@ -47,6 +47,6 @@ unsigned int queue_pop(queue_t *queue, char *buff, int len);
  * @brief 注销队列
  * @param queue_list    队列
  */
-QUEUE_ERR_e queeu_uninit(queue_t *queue_list);
+QUEUE_ERR_e queue_uninit(queue_t *queue_list);
 
 #endif

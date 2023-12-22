@@ -25,7 +25,7 @@ queue_t *queue_init(void)
     }
     if (QUEUE_LIST_SIZE == id)
     {
-        printf("there is no queue could be alloc\n");
+        //printf("there is no queue could be alloc\n");
         return NULL;
     }
 
@@ -88,10 +88,10 @@ unsigned int queue_pop(queue_t *queue, char *buff, int len)
  * @brief 注销队列
  * @param queue_list    队列
  */
-QUEUE_ERR_e queeu_uninit(queue_t *queue_list)
+QUEUE_ERR_e queue_uninit(queue_t *queue_list)
 {
     unsigned short i = 0, j = 0;
-    if (!queue_list)
+    if (!queue_list || !queue_list->queue)
         return QUEUE_ERR_MEM;
     if (queue_list->size != 0)
         return QUEUE_ERR_DATA;
@@ -99,14 +99,19 @@ QUEUE_ERR_e queeu_uninit(queue_t *queue_list)
 
     while (i < j)
     {
-        if (queue_list->queue == queue[i] || queue_list->queue == queue[j])
+        if (queue_list->queue == queue[i])
+        {
+            queue_mask &= ~(1 << i);
             break;
+        }
+        if (queue_list->queue == queue[j])
+        {
+            queue_mask &= ~(1 << j);
+            break;
+        }
         i++;
         j--;
     }
-    if (!queue_list)
-        return QUEUE_ERR_MEM;
-    queue_mask &= ~(1 << i);
     queue_list->queue = NULL;
     return QUEUE_ERR_OK;
 }
