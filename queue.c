@@ -4,11 +4,12 @@ static char queue[QUEUE_LIST_SIZE][QUEUE_MAX]; // queuedata
 static queue_t queue_fifo[QUEUE_LIST_SIZE];    // queuelist
 static unsigned char queue_mask;               // MASK
 
-static void QUEUE_PRI_LOG(queue_t *queue)
-{
-    printf("queue id is [%#x]\n", queue_mask);
-    printf("queue size is [%d]\n", queue->size);
-}
+// static void QUEUE_PRI_LOG(queue_t *queue)
+// {
+//     printf("queue id is [%#x]\n", queue_mask);
+//     printf("queue size is [%d]\n", queue->size);
+// }
+
 /**
  * @brief 注册一个队列
  * @param null
@@ -25,7 +26,7 @@ queue_t *queue_init(void)
     }
     if (QUEUE_LIST_SIZE == id)
     {
-        //printf("there is no queue could be alloc\n");
+        // printf("there is no queue could be alloc\n");
         return NULL;
     }
 
@@ -47,6 +48,8 @@ queue_t *queue_init(void)
  */
 QUEUE_ERR_e queue_push(queue_t *queue, char *buff, int len)
 {
+    if (!queue || !queue->queue)
+        return QUEUE_ERR_MEM;
     if (len > QUEUE_MAX - 1)
         return QUEUE_ERR_MAXLEN;
     if (queue->head != queue->tail)
@@ -72,6 +75,8 @@ QUEUE_ERR_e queue_push(queue_t *queue, char *buff, int len)
  */
 unsigned int queue_pop(queue_t *queue, char *buff, int len)
 {
+    if (!queue || !queue->queue)
+        return QUEUE_ERR_OK;
     if (queue->head == queue->tail)
         return QUEUE_ERR_OK;
     int pop_len = (len > queue->size) ? queue->size : len;
@@ -112,7 +117,9 @@ QUEUE_ERR_e queue_uninit(queue_t *queue_list)
         i++;
         j--;
     }
-    queue_list->queue = NULL;
+    if(i<j)
+        queue_list->queue = NULL;
+    
     return QUEUE_ERR_OK;
 }
 
@@ -127,8 +134,8 @@ int main()
     queue_t *queue6 = queue_init();
     queue_t *queue7 = queue_init();
     queue_t *queue8 = queue_init();
-    queeu_uninit(queue7);
-    queeu_uninit(queue8);
+    queue_uninit(queue7);
+    queue_uninit(queue8);
     queue_t *queue9 = queue_init();
     queue_t *queue10 = queue_init();
 
