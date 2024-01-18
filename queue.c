@@ -2,7 +2,7 @@
 
 static char queue[QUEUE_LIST_SIZE][QUEUE_MAX]; // queuedata
 static queue_t queue_fifo[QUEUE_LIST_SIZE];    // queuelist
-static unsigned char queue_mask;               // MASK
+static unsigned int queue_mask[2];             // MASK
 
 // static void QUEUE_PRI_LOG(queue_t *queue)
 // {
@@ -18,19 +18,30 @@ static unsigned char queue_mask;               // MASK
 queue_t *queue_init(void)
 {
     unsigned char id = 0;
-    queue_t *p_queue;
-    for (id = 0; id < QUEUE_LIST_SIZE; id++)
+    queue_t *p_queue = NULL;
+    char flag = 0;
+    unsigned int queue_mask_s = 0x0;
+    if (!(~queue_mask[0] | 0x0))
     {
-        if (!((queue_mask >> id) & 1))
+        queue_mask_s = queue_mask[1];
+        flag = 0;
+    }
+    else
+    {
+        queue_mask_s = queue_mask[0];
+        flag = 1;
+    }
+    for (id = 0; id < 32; id++)
+    {
+        if (!((queue_mask_s >> id) & 1))
             break;
     }
-    if (QUEUE_LIST_SIZE == id)
-    {
-        // printf("there is no queue could be alloc\n");
-        return NULL;
-    }
+    printf("queue_mask_s = %#x, id = %d\n", queue_mask_s, id);
 
-    queue_mask |= (1 << id);
+    if (flag)
+        queue_mask[0] |= (1 << id);
+    else
+        queue_mask[1] |= (1 << id);
     p_queue = &queue_fifo[id];
     p_queue->queue = queue[id];
     p_queue->head = 0;
@@ -71,7 +82,8 @@ QUEUE_ERR_e queue_push(queue_t *queue, char *buff, int len)
  * @brief 从队列中取数据
  * @param queue 队列
  * @param buff 存储取出数据指针
- * @param len 取出数据长度
+ * @param len 要取出数据长度
+ * @return 实际返回长度
  */
 unsigned int queue_pop(queue_t *queue, char *buff, int len)
 {
@@ -95,31 +107,42 @@ unsigned int queue_pop(queue_t *queue, char *buff, int len)
  */
 QUEUE_ERR_e queue_uninit(queue_t *queue_list)
 {
-    unsigned short i = 0, j = 0;
+    unsigned char i = 0;
+    unsigned char flag = 0x0;
     if (!queue_list || !queue_list->queue)
         return QUEUE_ERR_MEM;
     if (queue_list->size != 0)
         return QUEUE_ERR_DATA;
-    j = QUEUE_LIST_SIZE - 1;
 
-    while (i < j)
+    while (i < 32)
     {
         if (queue_list->queue == queue[i])
         {
-            queue_mask &= ~(1 << i);
-            break;
-        }
-        if (queue_list->queue == queue[j])
-        {
-            queue_mask &= ~(1 << j);
+            queue_mask[0] &= ~(1 << i);
+            flag = 1;
             break;
         }
         i++;
-        j--;
     }
-    if(i<j)
-        queue_list->queue = NULL;
-    
+    if (!flag)
+    {
+        i = 0;
+        while (i < 32)
+        {
+            if (queue_list->queue == queue[i])
+            {
+                queue_mask[1] &= ~(1 << i);
+                flag = 1;
+                break;
+            }
+            i++;
+        }
+    }
+    if(!flag)
+        return QUEUE_ERR_MEM;
+
+    queue_list->queue = NULL;
+
     return QUEUE_ERR_OK;
 }
 
@@ -134,31 +157,60 @@ int main()
     queue_t *queue6 = queue_init();
     queue_t *queue7 = queue_init();
     queue_t *queue8 = queue_init();
-    queue_uninit(queue7);
-    queue_uninit(queue8);
     queue_t *queue9 = queue_init();
     queue_t *queue10 = queue_init();
+    queue_t *queue11 = queue_init();
+    queue_t *queue12 = queue_init();
+    queue_t *queue13 = queue_init();
+    queue_t *queue14 = queue_init();
+    queue_t *queue15 = queue_init();
+    queue_t *queue16 = queue_init();
+    queue_t *queue17 = queue_init();
+    queue_t *queue18 = queue_init();
+    queue_t *queue19 = queue_init();
+    queue_t *queue20 = queue_init();
+    queue_t *queue21 = queue_init();
+    queue_t *queue22 = queue_init();
+    queue_t *queue23 = queue_init();
+    queue_t *queue24 = queue_init();
+    queue_t *queue25 = queue_init();
+    queue_t *queue26 = queue_init();
+    queue_t *queue27 = queue_init();
+    queue_t *queue28 = queue_init();
+    queue_t *queue29 = queue_init();
+    queue_t *queue30 = queue_init();
+    queue_t *queue31 = queue_init();
+    queue_t *queue32 = queue_init();
+    queue_t *queue33 = queue_init();
+    queue_t *queue34 = queue_init();
+    queue_t *queue35 = queue_init();
+    queue_t *queue36 = queue_init();
+    // char buff1[64] = "hello world";
+    // char buff2[32] = "123456789";
+    // char buff_pop1[128] = {0};
+    // char buff_pop2[128] = {0};
+    // queue_push(queue9, buff1, sizeof(buff1));
+    // queue_push(queue10, buff2, sizeof(buff2));
+    // printf("queue9 size [%d]\n", queue9->size);
+    // printf("queue10 size [%d]\n", queue10->size);
 
-    char buff1[64] = "hello world";
-    char buff2[32] = "123456789";
-    char buff_pop1[128] = {0};
-    char buff_pop2[128] = {0};
-    queue_push(queue9, buff1, sizeof(buff1));
-    queue_push(queue10, buff2, sizeof(buff2));
-    printf("queue9 size [%d]\n", queue9->size);
-    printf("queue10 size [%d]\n", queue10->size);
-
-    queue_pop(queue9, buff_pop1, 5);
-    queue_pop(queue10, buff_pop2, 6);
-    printf("buff_pop1 is [%s]\n", buff_pop1);
-    printf("buff_pop2 is [%s]\n", buff_pop2);
-    for (int i = 0; i < sizeof(buff_pop1); i++)
-        buff_pop1[i] = 0;
-    for (int i = 0; i < sizeof(buff_pop2); i++)
-        buff_pop2[i] = 0;
-    queue_pop(queue9, buff_pop1, sizeof(buff_pop1));
-    queue_pop(queue10, buff_pop2, sizeof(buff_pop2));
-    printf("buff_pop1 is [%s]\n", buff_pop1);
-    printf("buff_pop2 is [%s]\n", buff_pop2);
+    // queue_pop(queue9, buff_pop1, 5);
+    // queue_pop(queue10, buff_pop2, 6);
+    // printf("buff_pop1 is [%s]\n", buff_pop1);
+    // printf("buff_pop2 is [%s]\n", buff_pop2);
+    // for (int i = 0; i < sizeof(buff_pop1); i++)
+    //     buff_pop1[i] = 0;
+    // for (int i = 0; i < sizeof(buff_pop2); i++)
+    //     buff_pop2[i] = 0;
+    // queue_pop(queue9, buff_pop1, sizeof(buff_pop1));
+    // queue_pop(queue10, buff_pop2, sizeof(buff_pop2));
+    // printf("buff_pop1 is [%s]\n", buff_pop1);
+    // printf("buff_pop2 is [%s]\n", buff_pop2);
+    printf("queue_mask[0] = %#x, queue_mask[1] = %#x\n", queue_mask[0], queue_mask[1]);
+    // queue_uninit(queue34);
+    queue_uninit(queue31);
+    printf("queue_mask[0] = %#x, queue_mask[1] = %#x\n", queue_mask[0], queue_mask[1]);
+    queue_t *queue37 = queue_init();
+    printf("queue_mask[0] = %#x, queue_mask[1] = %#x\n", queue_mask[0], queue_mask[1]);
     return 0;
 }

@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#define QUEUE_NUM   8
+#define QUEUE_NUM   64
 #define QUEUE_MAX   256
 
 #if !defined(QUEUE_LIST_SIZE)
