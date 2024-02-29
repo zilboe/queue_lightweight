@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #define QUEUE_NUM   64
-#define QUEUE_MAX   256
+#define QUEUE_MAX   1024
 
 #if !defined(QUEUE_LIST_SIZE)
 #define QUEUE_LIST_SIZE (sizeof(char)*QUEUE_NUM)
@@ -17,6 +17,7 @@ typedef struct queue_t{
     unsigned short tail;
     char *queue;
     unsigned short size;
+    void *arg;
 }queue_t;
 
 
@@ -28,6 +29,7 @@ typedef enum QUEUE_ERR{
     QUEUE_ERR_EMPTY,    //EMPTY
     QUEUE_ERR_MEM,
     QUEUE_ERR_DATA,
+    QUEUE_ERR_BACK,
 }QUEUE_ERR_e;
 
 /**
@@ -51,4 +53,16 @@ unsigned int queue_pop(queue_t *queue, char *buff, int len);
  */
 QUEUE_ERR_e queue_uninit(queue_t *queue_list);
 
+
+
+typedef int (*pop_callback_fn)(queue_t *queue, void *arg);
+
+/**
+ * @brief 取出数据（包含回调）
+ * @param queue 队列
+ * @param recv_buff 存放数据队列
+ * @param len 取出长度
+ * @param callback 回调接口
+ */
+int queue_pop_with_callback_fn(queue_t *queue, char *recv_buff, int len, pop_callback_fn callback);
 #endif

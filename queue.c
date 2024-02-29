@@ -92,6 +92,12 @@ unsigned int queue_pop(queue_t *queue, char *buff, int len)
     if (queue->head == queue->tail)
         return QUEUE_ERR_OK;
     int pop_len = (len > queue->size) ? queue->size : len;
+    if(!buff)
+    {
+        queue->head = (queue->head + pop_len) % QUEUE_MAX;
+        queue->size -= pop_len;
+        return pop_len;
+    }
     for (int i = 0; i < pop_len; i++)
     {
         queue->head = (queue->head + 1) % QUEUE_MAX;
@@ -144,6 +150,21 @@ QUEUE_ERR_e queue_uninit(queue_t *queue_list)
     queue_list->queue = NULL;
 
     return QUEUE_ERR_OK;
+}
+
+int queue_pop_with_callback_fn(queue_t *queue, char *recv_buff, int len, pop_callback_fn callback)
+{
+    if(!recv_buff && !callback)
+        return queue_pop(queue, NULL, len);
+    if(callback)
+    {
+        if(callback(queue, queue->arg))
+            return queue_pop(queue, recv_buff, len);
+        else
+            return QUEUE_ERR_BACK;
+    }
+    else
+        return queue_pop(queue, recv_buff, len);
 }
 
 int main()
@@ -212,5 +233,7 @@ int main()
     printf("queue_mask[0] = %#x, queue_mask[1] = %#x\n", queue_mask[0], queue_mask[1]);
     queue_t *queue37 = queue_init();
     printf("queue_mask[0] = %#x, queue_mask[1] = %#x\n", queue_mask[0], queue_mask[1]);
+
+    
     return 0;
 }
